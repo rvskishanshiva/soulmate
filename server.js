@@ -21,14 +21,18 @@ const ALLOWED_USERS = ["Sunshine", "Angel"];
 let onlineUsers = 0;
 
 // Render uses a dedicated disk directory; fallback to local project path if absent
-const DB_DIR = process.env.DISK_PATH || "./database";
-const DB_PATH = path.join(DB_DIR, "chat.db");
+const dbPath = process.env.RENDER_DISK_PATH 
+    ? path.join(process.env.RENDER_DISK_PATH, 'chat.db') 
+    : path.join(__dirname, 'chat.db');
 
 if (!fs.existsSync(DB_DIR)) {
     fs.mkdirSync(DB_DIR, { recursive: true });
 }
 
-const db = new sqlite3.Database(DB_PATH);
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) console.error('Database opening error:', err.message);
+    else console.log('Connected to SQLite database at:', dbPath);
+});
 
 db.serialize(() => {
     db.run(`
